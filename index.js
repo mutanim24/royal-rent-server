@@ -49,6 +49,8 @@ async function run() {
             res.send(result)
         })
 
+        // Comment Operation
+
         app.post("/comment", async (req, res) => {
             const comment = req.body;
             console.log(comment)
@@ -56,13 +58,18 @@ async function run() {
             res.send(result);
         })
 
+        app.get("/comment", async (req, res) => {
+            const cursor = commentCollection.find();
+            const result = await cursor.toArray()
+            res.send(result)
+        })
         
+        // Booking Operation 
         app.post("/booking", async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking)
             res.send(result)
         })
-
 
          app.get("/booking", async (req, res) => {
             const cursor = bookingCollection.find();
