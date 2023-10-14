@@ -4,10 +4,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = 3000
 
-app.use(express.json());
+// app.use(express.json());
 
 // middleware
 app.use(cors())
+app.use(express.json())
+
 // user: 
 // pass: TqIvVssdXgDthMF9
 
@@ -32,6 +34,7 @@ async function run() {
 
         const carCollection = client.db("RoyalRent").collection("car-collection");
         const commentCollection = client.db("RoyalRent").collection("comment-collection")
+        const bookingCollection = client.db("RoyalRent").collection("booking-collection");
 
 
         app.get("/cars", async (req, res) => {
@@ -40,8 +43,8 @@ async function run() {
         })
 
         app.get("/car/:id", async (req, res) => {
-            const id =  req.params.id;
-            const filter = {_id: new ObjectId(id)}
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
             const result = await carCollection.findOne(filter);
             res.send(result)
         })
@@ -52,6 +55,24 @@ async function run() {
             const result = await commentCollection.insertOne(comment);
             res.send(result);
         })
+
+        
+        app.post("/booking", async (req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking)
+            res.send(result)
+        })
+
+
+         app.get("/booking", async (req, res) => {
+            const cursor = bookingCollection.find();
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+
+       
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
