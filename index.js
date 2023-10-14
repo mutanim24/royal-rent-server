@@ -4,6 +4,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express()
 const port = 3000
 
+// app.use(express.json());
+
 // middleware
 app.use(cors())
 app.use(express.json())
@@ -31,6 +33,7 @@ async function run() {
         await client.connect();
 
         const carCollection = client.db("RoyalRent").collection("car-collection");
+        const commentCollection = client.db("RoyalRent").collection("comment-collection")
         const bookingCollection = client.db("RoyalRent").collection("booking-collection");
 
 
@@ -44,6 +47,13 @@ async function run() {
             const filter = { _id: new ObjectId(id) }
             const result = await carCollection.findOne(filter);
             res.send(result)
+        })
+
+        app.post("/comment", async (req, res) => {
+            const comment = req.body;
+            console.log(comment)
+            const result = await commentCollection.insertOne(comment);
+            res.send(result);
         })
 
         
