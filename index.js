@@ -6,6 +6,8 @@ const port = 3000
 
 // middleware
 app.use(cors())
+app.use(express.json());
+
 // user: 
 // pass: TqIvVssdXgDthMF9
 
@@ -26,9 +28,46 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const carCollection = client.db("RoyalRent").collection("car-collection");
+        const usersCollection = client.db("RoyalRent").collection("users");
+        // Regular user route
+        app.get("/users", async (req, res) => {
+            try {
+                const result = await usersCollection.find().toArray();
+                res.status(200).send(result);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ error: "Internal Server Error" });
+            }
+        });
+
+        app.post("/users", async (req, res) => {
+            try {
+                const user = req.body;
+                console.log(user)
+                // Check if the email property exists in the user object
+                if (!user || !user.email) {
+                    return res.status(400).send({ message: "Invalid user object. Email is required." });
+                }
+
+                const query = { email: user.email };
+                const existingUser = await usersCollection.findOne(query);
+
+                if (existingUser) {
+                    return res.status(400).send({ message: "User already exists" });
+                }
+
+                user.role = "user"; // Default role is user
+
+                const result = await usersCollection.insertOne(user);
+                res.status(201).send(result);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ error: "Internal Server Error" });
+            }
+        });
 
         app.get("/cars", async (req, res) => {
             const result = await carCollection.find().toArray();
@@ -36,8 +75,8 @@ async function run() {
         })
 
         app.get("/car/:id", async (req, res) => {
-            const id =  req.params.id;
-            const filter = {_id: new ObjectId(id)}
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
             const result = await carCollection.findOne(filter);
             res.send(result)
         })
@@ -54,7 +93,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('Welcome to Royal Rent')
 })
 
 app.listen(port, () => {
