@@ -59,10 +59,31 @@ async function run() {
                     return res.status(400).send({ message: "User already exists" });
                 }
 
-                user.role = "user"; // Default role is user
+                user.role = "user";
 
                 const result = await usersCollection.insertOne(user);
                 res.status(201).send(result);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send({ error: "Internal Server Error" });
+            }
+        });
+
+        // Check if a user has admin role route
+        app.get("/users/:email", async (req, res) => {
+            try {
+                const userEmail = req.params.email;
+
+                const user = await usersCollection.findOne({ email: userEmail });
+
+                if (!user) {
+                    return res.status(404).send({ error: "User not found" });
+                }
+
+                const userRole = user.role || "user";
+                const isAdmin = userRole === "admin";
+
+                res.status(200).send({ email: userEmail, isAdmin });
             } catch (error) {
                 console.error(error);
                 res.status(500).send({ error: "Internal Server Error" });
